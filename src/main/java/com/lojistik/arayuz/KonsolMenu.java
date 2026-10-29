@@ -10,6 +10,7 @@ import com.lojistik.servis.LojistikServisi;
 import com.lojistik.strateji.EnIyiYerlesimStratejisi;
 import com.lojistik.strateji.IlkUygunStratejisi;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -42,8 +43,8 @@ public class KonsolMenu {
                 switch (secim) {
                     case "1" -> paketEkle();
                     case "2" -> aracEkle();
-                    case "3" -> paketler.hepsiniGetir().forEach(System.out::println);
-                    case "4" -> araclar.hepsiniGetir().forEach(System.out::println);
+                    case "3" -> listele(paketler.hepsiniGetir(), "Kayıtlı paket yok.");
+                    case "4" -> listele(araclar.hepsiniGetir(), "Kayıtlı araç yok. Önce 2 ile araç ekleyin.");
                     case "5" -> { servis.setStrateji(new EnIyiYerlesimStratejisi()); System.out.println(servis.planla()); }
                     case "6" -> { servis.setStrateji(new IlkUygunStratejisi()); System.out.println(servis.planla()); }
                     case "0" -> { return; }
@@ -73,6 +74,11 @@ public class KonsolMenu {
         double kapasite = sayiOku("Kapasite (kg): ");
         araclar.ekle(AracFabrikasi.olustur(tip, plaka, kapasite));
         System.out.println("Araç eklendi.");
+    }
+
+    private void listele(List<?> liste, String bosMesaj) {
+        if (liste.isEmpty()) System.out.println(bosMesaj);
+        else liste.forEach(System.out::println);
     }
 
     private String oku(String mesaj) {
