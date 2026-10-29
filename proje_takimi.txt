@@ -1,0 +1,7 @@
+Proje: Akıllı Lojistik ve Dağıtım Planlama Sistemi
+
+Proje tek kişi tarafından hazırlanmıştır.
+
+Ad Soyad   : Yusuf Kebapcı Gündüz
+Öğrenci No : 1250505083
+Görev      : Tüm proje (analiz, tasarım, kodlama, test, UML ve dokümantasyon)
