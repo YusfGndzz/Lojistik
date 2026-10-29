@@ -6,73 +6,41 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 
 /**
- * Kayıtları bir metin dosyasında satır satır tutan ortak repository.
- * Açılışta dosyayı okur, her değişiklikte dosyayı yeniden yazar.
+ * Metin dosyasında her satıra bir kayıt yazan ortak (soyut) repository.
+ * Her ekleme/silme işleminde dosya hemen güncellenir => veriler kalıcıdır.
+ * Satıra çevirme ve satırdan okuma işi alt sınıflara bırakılmıştır (Template Method fikri).
  */
 public abstract class DosyaRepository<T> implements Repository<T> {
-    protected static final String AYIRAC = ";";
+    protected static final String AYRAC = ";";
 
     private final Path dosya;
     private final List<T> kayitlar = new ArrayList<>();
 
     protected DosyaRepository(Path dosya) {
         this.dosya = dosya;
-        yukle();
     }
 
-    protected abstract String anahtar(T nesne);
     protected abstract String satiraCevir(T nesne);
-    protected abstract T satirdanOlustur(String[] alanlar);
 
-    @Override
-    public void ekle(T nesne) {
-        if (bul(anahtar(nesne)).isPresent()) {
-            throw new IllegalArgumentException("Bu kayıt zaten var: " + anahtar(nesne));
-        }
-        kayitlar.add(nesne);
-        kaydet();
-    }
+    protected abstract T satirdanOku(String[] alanlar);
 
-    @Override
-    public boolean sil(String anahtar) {
-        boolean silindi = kayitlar.removeIf(k -> ayniAnahtar(anahtar(k), anahtar));
-        if (silindi) kaydet();
-        return silindi;
-    }
+    protected abstract String idGetir(T nesne);
 
-    @Override
-    public Optional<T> bul(String anahtar) {
-        return kayitlar.stream().filter(k -> ayniAnahtar(anahtar(k), anahtar)).findFirst();
-    }
-
-    @Override
-    public List<T> hepsiniGetir() {
-        return Collections.unmodifiableList(kayitlar);
-    }
-
-    private static boolean ayniAnahtar(String a, String b) {
-        return a.toUpperCase(Locale.ROOT).equals(b.toUpperCase(Locale.ROOT));
-    }
-
-    protected static String alan(String deger) {
-        if (deger.contains(AYIRAC)) {
-            throw new IllegalArgumentException("Değer '" + AYIRAC + "' karakteri içeremez: " + deger);
-        }
-        return deger;
-    }
-
-    private void yukle() {
+    /** Kurucuda değil, alt sınıf hazır olduktan sonra çağrılır. */
+    protected void yukle() {
+        kayitlar.clear();
         if (!Files.exists(dosya)) return;
         try {
             for (String satir : Files.readAllLines(dosya, StandardCharsets.UTF_8)) {
-                if (satir.isBlank()) continue;
-                kayitlar.add(satirdanOlustur(satir.split(AYIRAC, -1)));
+                if (satir.isBlank() || satir.startsWith("#")) continue;
+                try {
+                    kayitlar.add(satirdanOku(satir.split(AYRAC)));
+                } catch (RuntimeException e) {
+                    System.err.println("Bozuk satır atlandı: " + satir);
+                }
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Dosya okunamadı: " + dosya, e);
@@ -80,12 +48,35 @@ public abstract class DosyaRepository<T> implements Repository<T> {
     }
 
     private void kaydet() {
-        List<String> satirlar = kayitlar.stream().map(this::satiraCevir).toList();
         try {
             if (dosya.getParent() != null) Files.createDirectories(dosya.getParent());
+            List<String> satirlar = new ArrayList<>();
+            for (T k : kayitlar) satirlar.add(satiraCevir(k));
             Files.write(dosya, satirlar, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException("Dosya yazılamadı: " + dosya, e);
+            throw new UncheckedIOException("Dosyaya yazılamadı: " + dosya, e);
         }
+    }
+
+    @Override
+    public List<T> hepsiniGetir() {
+        return new ArrayList<>(kayitlar);
+    }
+
+    @Override
+    public void ekle(T nesne) {
+        String id = idGetir(nesne);
+        if (kayitlar.stream().anyMatch(k -> idGetir(k).equalsIgnoreCase(id))) {
+            throw new IllegalArgumentException("Bu kimlikle kayıt zaten var: " + id);
+        }
+        kayitlar.add(nesne);
+        kaydet();
+    }
+
+    @Override
+    public boolean sil(String id) {
+        boolean silindi = kayitlar.removeIf(k -> idGetir(k).equalsIgnoreCase(id));
+        if (silindi) kaydet();
+        return silindi;
     }
 }

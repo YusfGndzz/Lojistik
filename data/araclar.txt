@@ -1,0 +1,3 @@
+Kamyon;34ABC01;1000
+Kamyonet;34KMY22;400
+Motokurye;34MTR07;20

@@ -2,18 +2,19 @@ package com.lojistik.strateji;
 
 import com.lojistik.model.Paket;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class PaketSiralayici {
-    /** Önce yüksek öncelik, aynı öncelikte ağır paket önce. */
-    public static final Comparator<Paket> ONCELIK_VE_AGIRLIK =
-            Comparator.comparing(Paket::getOncelik).reversed()
-                    .thenComparing(Comparator.comparingDouble(Paket::getAgirlik).reversed());
+/** Paketleri önce önceliğe (ACIL en önde), sonra ağırlığa (ağır en önde) göre sıralar. */
+final class PaketSiralayici {
+    private PaketSiralayici() { }
 
-    private PaketSiralayici() {}
-
-    public static List<Paket> sirala(List<Paket> paketler) {
-        return paketler.stream().sorted(ONCELIK_VE_AGIRLIK).toList();
+    static List<Paket> onceligeVeAgirligaGore(List<Paket> paketler) {
+        List<Paket> sirali = new ArrayList<>(paketler);
+        sirali.sort(Comparator
+                .comparingInt((Paket p) -> p.getOncelik().getSeviye()).reversed()
+                .thenComparing(Comparator.comparingDouble(Paket::getAgirlik).reversed()));
+        return sirali;
     }
 }

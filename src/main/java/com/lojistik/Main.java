@@ -8,13 +8,19 @@ import com.lojistik.servis.LojistikServisi;
 import com.lojistik.strateji.EnIyiYerlesimStratejisi;
 
 import java.nio.file.Path;
+import java.util.Scanner;
 
+/** Programın giriş noktası: nesneleri oluşturup birbirine bağlar ve menüyü başlatır. */
 public class Main {
     public static void main(String[] args) {
-        PaketRepository paketler = new PaketRepository(Path.of("data", "paketler.txt"));
-        AracRepository araclar = new AracRepository(Path.of("data", "araclar.txt"));
-        LojistikServisi servis = new LojistikServisi(paketler, araclar,
-                new EnIyiYerlesimStratejisi(), new EnYakinKomsuOptimizer());
-        new KonsolMenu(paketler, araclar, servis).baslat();
+        PaketRepository paketRepo = new PaketRepository(Path.of("data", "paketler.txt"));
+        AracRepository aracRepo = new AracRepository(Path.of("data", "araclar.txt"));
+
+        LojistikServisi servis = new LojistikServisi(
+                paketRepo, aracRepo,
+                new EnIyiYerlesimStratejisi(),
+                new EnYakinKomsuOptimizer());
+
+        new KonsolMenu(servis, paketRepo, aracRepo, new Scanner(System.in)).baslat();
     }
 }

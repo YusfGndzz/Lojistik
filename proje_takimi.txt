@@ -1,9 +1,9 @@
-Proje: Akıllı Lojistik ve Dağıtım Planlama Sistemi
+Proje: Akıllı Lojistik Sistemi
+Grup No: ____
+GitHub: https://github.com/YusfGndzz/Lojistik
+
+Öğrenci No     | Ad Soyad                  | Görev
+---------------|---------------------------|----------------------------------------------------------------
+1250505083     | Yusuf Kebapcı Gündüz      | Tüm proje (tasarım, kodlama, birim testleri, UML, README, video)
 
 Proje tek kişi tarafından hazırlanmıştır.
-
-Ad Soyad   : Yusuf Kebapcı Gündüz
-Öğrenci No : 1250505083
-Görev      : Tüm proje (analiz, tasarım, kodlama, test, UML ve dokümantasyon)
-
-GitHub     : https://github.com/YusfGndzz/akilli-lojistik

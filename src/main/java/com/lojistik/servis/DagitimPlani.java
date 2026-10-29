@@ -3,8 +3,10 @@ package com.lojistik.servis;
 import com.lojistik.model.Paket;
 import com.lojistik.model.Rota;
 
+import java.util.Collections;
 import java.util.List;
 
+/** Planlama sonucunu tutar: araç rotaları + hiçbir araca sığmayan paketler. */
 public class DagitimPlani {
     private final List<Rota> rotalar;
     private final List<Paket> atanamayanlar;
@@ -14,25 +16,14 @@ public class DagitimPlani {
         this.atanamayanlar = List.copyOf(atanamayanlar);
     }
 
-    public List<Rota> getRotalar() { return rotalar;}
-    public List<Paket> getAtanamayanlar() { return atanamayanlar;}
+    public List<Rota> getRotalar() { return Collections.unmodifiableList(rotalar); }
+    public List<Paket> getAtanamayanlar() { return Collections.unmodifiableList(atanamayanlar); }
 
     public double toplamMesafe() {
-        return rotalar.stream().mapToDouble(Rota::getMesafe).sum();
+        return rotalar.stream().mapToDouble(Rota::toplamMesafe).sum();
     }
 
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder("=== Dağıtım Planı ===\n");
-        for (Rota rota : rotalar) {
-            sb.append(rota.getArac()).append('\n');
-            sb.append("  Rota: ").append(rota).append('\n');
-        }
-        sb.append(String.format("Toplam mesafe: %.2f km%n", toplamMesafe()));
-        if (!atanamayanlar.isEmpty()) {
-            sb.append("Sığmayan paketler:\n");
-            atanamayanlar.forEach(p -> sb.append("  ").append(p).append('\n'));
-        }
-        return sb.toString();
+    public double toplamMaliyet() {
+        return rotalar.stream().mapToDouble(Rota::maliyet).sum();
     }
 }

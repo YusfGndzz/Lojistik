@@ -1,7 +1,17 @@
 package com.lojistik.model;
 
 public enum Oncelik {
-    DUSUK,
-    NORMAL,
-    ACIL
+    NORMAL(1),
+    HIZLI (2),
+    ACIL (3);
+
+    private final int seviye;
+
+    Oncelik(int seviye) {
+        this.seviye = seviye;
+    }
+
+    public  int getSeviye() {
+        return seviye;
+    }
 }

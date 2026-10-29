@@ -5,29 +5,35 @@ import com.lojistik.model.Oncelik;
 import com.lojistik.model.Paket;
 
 import java.nio.file.Path;
+import java.util.Locale;
 
-/** Satır biçimi: id;alici;agirlik;oncelik;konumAdi;x;y */
+/** Paketleri data/paketler.txt dosyasında saklar. Satır: id;alici;agirlik;konumAdi;x;y;oncelik */
 public class PaketRepository extends DosyaRepository<Paket> {
 
     public PaketRepository(Path dosya) {
         super(dosya);
-    }
-
-    @Override
-    protected String anahtar(Paket paket) {
-        return paket.getId();
+        yukle();
     }
 
     @Override
     protected String satiraCevir(Paket p) {
         Konum h = p.getHedef();
-        return String.join(AYIRAC, alan(p.getId()), alan(p.getAlici()), Double.toString(p.getAgirlik()),
-                p.getOncelik().name(), alan(h.getAd()), Double.toString(h.getX()), Double.toString(h.getY()));
+        return String.join(AYRAC, p.getId(), p.getAlici(),
+                String.format(Locale.ROOT, "%.2f", p.getAgirlik()),
+                h.getAd(),
+                String.format(Locale.ROOT, "%.2f", h.getX()),
+                String.format(Locale.ROOT, "%.2f", h.getY()),
+                p.getOncelik().name());
     }
 
     @Override
-    protected Paket satirdanOlustur(String[] a) {
-        Konum hedef = new Konum(a[4], Double.parseDouble(a[5]), Double.parseDouble(a[6]));
-        return new Paket(a[0], a[1], Double.parseDouble(a[2]), hedef, Oncelik.valueOf(a[3]));
+    protected Paket satirdanOku(String[] a) {
+        Konum hedef = new Konum(a[3], Double.parseDouble(a[4]), Double.parseDouble(a[5]));
+        return new Paket(a[0], a[1], Double.parseDouble(a[2]), hedef, Oncelik.valueOf(a[6]));
+    }
+
+    @Override
+    protected String idGetir(Paket p) {
+        return p.getId();
     }
 }

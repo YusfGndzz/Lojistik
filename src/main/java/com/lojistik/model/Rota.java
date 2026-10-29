@@ -1,35 +1,39 @@
 package com.lojistik.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+/** Bir aracın depodan çıkıp durakları gezip depoya döndüğü teslimat rotası. */
 public class Rota {
     private final Arac arac;
-    private final List<Konum> duraklar;
+    private final List<Konum> duraklar; // ilk ve son eleman depodur
 
     public Rota(Arac arac, List<Konum> duraklar) {
         this.arac = arac;
-        this.duraklar = List.copyOf(duraklar);
+        this.duraklar = new ArrayList<>(duraklar);
     }
 
-    public static double toplamMesafe(List<Konum> tur) {
+    public double toplamMesafe() {
+        return toplamMesafe(duraklar);
+    }
+
+    /** Herhangi bir durak listesinin uzunluğu (algoritmalar da kullanır). */
+    public static double toplamMesafe(List<Konum> liste) {
         double toplam = 0;
-        for (int i = 1; i < tur.size(); i++) {
-            toplam += tur.get(i - 1).mesafe(tur.get(i));
+        for (int i = 0; i < liste.size() - 1; i++) {
+            toplam += liste.get(i).mesafe(liste.get(i + 1));
         }
         return toplam;
     }
 
-    public Arac getArac() { return arac;}
-    public List<Konum> getDuraklar() { return duraklar;}
-    public double getMesafe() { return toplamMesafe(duraklar);}
+    public double maliyet() {
+        return arac.maliyetHesapla(toplamMesafe());
+    }
 
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < duraklar.size(); i++) {
-            if (i > 0) sb.append(" -> ");
-            sb.append(duraklar.get(i).getAd());
-        }
-        return String.format("%s | %s | %.2f km", arac.getPlaka(), sb, getMesafe());
+    public Arac getArac() { return arac; }
+
+    public List<Konum> getDuraklar() {
+        return Collections.unmodifiableList(duraklar);
     }
 }

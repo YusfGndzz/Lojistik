@@ -1,29 +1,20 @@
 @startuml
-title Akıllı Lojistik Sistemi - Sınıf Diyagramı\nYusuf Kebapcı Gündüz - 1250505083
-
+title Akıllı Lojistik Sistemi - UML Sınıf Diyagramı
 skinparam classAttributeIconSize 0
 
-package com.lojistik {
-  class Main {
-    + {static} main(args : String[]) : void
-  }
-}
-
-package com.lojistik.model {
+package model {
   class Konum {
     - ad : String
     - x : double
     - y : double
-    + {static} depo() : Konum
     + mesafe(diger : Konum) : double
+    + {static} depo() : Konum
   }
-
   enum Oncelik {
-    DUSUK
     NORMAL
+    HIZLI
     ACIL
   }
-
   class Paket {
     - id : String
     - alici : String
@@ -31,131 +22,102 @@ package com.lojistik.model {
     - hedef : Konum
     - oncelik : Oncelik
   }
-
   abstract class Arac {
     - plaka : String
     - kapasite : double
     - yuk : List<Paket>
-    + {abstract} getTip() : String
-    + getDoluluk() : double
+    + {abstract} getTur() : String
+    + {abstract} kmBasinaMaliyet() : double
+    + sabitMaliyet() : double
+    + maliyetHesapla(km : double) : double
+    + paketiAlabilirMi(p : Paket) : boolean
+    + yukle(p : Paket) : boolean
+    + bosalt()
     + kalanKapasite() : double
-    + sigarMi(paket : Paket) : boolean
-    + yukle(paket : Paket) : boolean
-    + bosalt() : void
   }
-
   class Kamyon
   class Kamyonet
-  class Motokurye
-
+  class Motokurye {
+    + paketiAlabilirMi(p : Paket) : boolean
+  }
   class Rota {
     - arac : Arac
     - duraklar : List<Konum>
-    + {static} toplamMesafe(tur : List<Konum>) : double
-    + getMesafe() : double
+    + toplamMesafe() : double
+    + maliyet() : double
   }
 }
 
-package com.lojistik.strateji {
+package strateji {
   interface DagitimStratejisi {
-    + dagit(paketler : List<Paket>, araclar : List<Arac>) : List<Paket>
+    + dagit(paketler, araclar) : List<Paket>
+    + getAd() : String
   }
   class EnIyiYerlesimStratejisi
   class IlkUygunStratejisi
-  class PaketSiralayici {
-    + {static} ONCELIK_VE_AGIRLIK : Comparator<Paket>
-    + {static} sirala(paketler : List<Paket>) : List<Paket>
-  }
 }
 
-package com.lojistik.rota {
+package rota {
   interface RotaOptimizer {
-    + optimizeEt(baslangic : Konum, duraklar : List<Konum>) : List<Konum>
+    + optimizeEt(baslangic, duraklar) : List<Konum>
   }
-  class EnYakinKomsuOptimizer {
-    - ikiOpt : boolean
-    - ikiOptUygula(tur : List<Konum>) : void
-  }
+  class EnYakinKomsuOptimizer
 }
 
-package com.lojistik.fabrika {
+package fabrika {
   class AracFabrikasi {
-    + {static} olustur(tip : String, plaka : String, kapasite : double) : Arac
+    + {static} olustur(tur, plaka, kapasite) : Arac
   }
 }
 
-package com.lojistik.depo {
+package depo {
   interface "Repository<T>" as Repository {
-    + ekle(nesne : T) : void
-    + sil(anahtar : String) : boolean
-    + bul(anahtar : String) : Optional<T>
     + hepsiniGetir() : List<T>
+    + ekle(nesne : T)
+    + sil(id : String) : boolean
   }
-  abstract class "DosyaRepository<T>" as DosyaRepository {
-    - dosya : Path
-    - kayitlar : List<T>
-    # {abstract} anahtar(nesne : T) : String
-    # {abstract} satiraCevir(nesne : T) : String
-    # {abstract} satirdanOlustur(alanlar : String[]) : T
-    - yukle() : void
-    - kaydet() : void
-  }
+  abstract class "DosyaRepository<T>" as DosyaRepository
   class PaketRepository
   class AracRepository
 }
 
-package com.lojistik.servis {
+package servis {
   class LojistikServisi {
-    - strateji : DagitimStratejisi
-    - optimizer : RotaOptimizer
-    + setStrateji(strateji : DagitimStratejisi) : void
     + planla() : DagitimPlani
+    + setStrateji(s : DagitimStratejisi)
   }
   class DagitimPlani {
-    - rotalar : List<Rota>
-    - atanamayanlar : List<Paket>
     + toplamMesafe() : double
+    + toplamMaliyet() : double
   }
 }
 
-package com.lojistik.arayuz {
+package arayuz {
   class KonsolMenu {
-    + baslat() : void
+    + baslat()
   }
 }
 
 Arac <|-- Kamyon
 Arac <|-- Kamyonet
 Arac <|-- Motokurye
-Paket --> Konum : hedef
+Paket --> Konum
 Paket --> Oncelik
-Arac o-- "0..*" Paket : yuk
+Arac o-- Paket
 Rota --> Arac
-Rota --> "2..*" Konum : duraklar
-
+Rota o-- Konum
 DagitimStratejisi <|.. EnIyiYerlesimStratejisi
 DagitimStratejisi <|.. IlkUygunStratejisi
-EnIyiYerlesimStratejisi ..> PaketSiralayici
-IlkUygunStratejisi ..> PaketSiralayici
-
 RotaOptimizer <|.. EnYakinKomsuOptimizer
-
-AracFabrikasi ..> Arac : <<create>>
-
 Repository <|.. DosyaRepository
 DosyaRepository <|-- PaketRepository
 DosyaRepository <|-- AracRepository
 AracRepository ..> AracFabrikasi
-
-LojistikServisi --> PaketRepository
-LojistikServisi --> AracRepository
+AracFabrikasi ..> Arac : <<create>>
+LojistikServisi --> Repository
 LojistikServisi --> DagitimStratejisi
 LojistikServisi --> RotaOptimizer
-LojistikServisi ..> DagitimPlani : <<create>>
-DagitimPlani --> "0..*" Rota
-
+LojistikServisi ..> DagitimPlani
+DagitimPlani o-- Rota
 KonsolMenu --> LojistikServisi
-KonsolMenu --> PaketRepository
-KonsolMenu --> AracRepository
-Main ..> KonsolMenu
 @enduml
